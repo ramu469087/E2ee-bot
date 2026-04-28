@@ -1,0 +1,47 @@
+name: RAJ MISHRA BOT
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 📦 Install Python deps
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🌐 Install Chromium & ChromeDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          
+          # Create symlink for chromium
+          if [ -f /usr/bin/chromium-browser ] && [ ! -f /usr/bin/chromium ]; then
+            sudo ln -s /usr/bin/chromium-browser /usr/bin/chromium
+          fi
+          
+          echo "✅ Chromium installed: $(chromium-browser --version)"
+          echo "✅ ChromeDriver installed: $(chromedriver --version)"
+
+      - name: 🤖 Run Bot
+        run: |
+          echo "🚀 Starting bot..."
+          while true; do
+            python bot.py
+            echo "Bot stopped, restarting..."
+            sleep 5
+          done
